@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text.RegularExpressions;
 
 namespace ChessBrowser
@@ -21,54 +20,89 @@ namespace ChessBrowser
 
     public static class PgnParser
     {
-        private static readonly Regex tagRegex = new Regex(@"\[(\w+) \"(.*?)\"]");
-        private static readonly Regex moveSectionRegex = new Regex(@"\n\n(.*?)(?=\n\n|$)", RegexOptions.Singleline);
-
-        public static List<ChessGame> ParsePgnFile(string filePath)
+        private static readonly Regex tagRegex = new Regex(@"\[(\w+) ""(.*?)""\]", RegexOptions.Compiled);
+        
+        public static List<ChessGame> ParsePgnFile(string[] fileLines)
         {
             var games = new List<ChessGame>();
-            var content = File.ReadAllText(filePath);
-            var gameSections = content.Split(new string[] { "\n\n" }, StringSplitOptions.RemoveEmptyEntries);
-            
-            for (int i = 0; i < gameSections.Length; i += 2) // Each game has metadata followed by moves
+            var currentGameData = new List<string>();
+
+            foreach (var line in fileLines)
             {
-                var game = new ChessGame();
-                var metadata = gameSections[i];
-                var moves = i + 1 < gameSections.Length ? gameSections[i + 1] : "";
-                
-                foreach (Match match in tagRegex.Matches(metadata))
+                if (string.IsNullOrWhiteSpace(line))
                 {
-                    string key = match.Groups[1].Value;
-                    string value = match.Groups[2].Value;
-                    
-                    switch (key)
+                    if (currentGameData.Count > 0)
                     {
-                        case "Event": game.Event = value; break;
-                        case "Site": game.Site = value; break;
-                        case "Round": game.Round = value; break;
-                        case "White": game.White = value; break;
-                        case "Black": game.Black = value; break;
-                        case "WhiteElo": game.WhiteElo = int.TryParse(value, out int wElo) ? wElo : 0; break;
-                        case "BlackElo": game.BlackElo = int.TryParse(value, out int bElo) ? bElo : 0; break;
-                        case "Result": game.Result = ParseResult(value); break;
-                        case "EventDate": game.EventDate = value; break;
+                        games.Add(ParseSingleGame(currentGameData));
+                        currentGameData.Clear();
                     }
                 }
-                game.Moves = moves.Trim();
-                games.Add(game);
+                else
+                {
+                    currentGameData.Add(line);
+                }
             }
+
+            if (currentGameData.Count > 0)
+            {
+                games.Add(ParseSingleGame(currentGameData));
+            }
+
             return games;
+        }
+
+        private static ChessGame ParseSingleGame(List<string> gameData)
+        {
+            var game = new ChessGame();
+            var metadata = new List<string>();
+            var moves = "";
+            bool movesSection = false;
+
+            foreach (var line in gameData)
+            {
+                if (line.StartsWith("["))
+                {
+                    metadata.Add(line);
+                }
+                else
+                {
+                    movesSection = true;
+                    moves += " " + line.Trim();
+                }
+            }
+
+            foreach (Match match in tagRegex.Matches(string.Join("\n", metadata)))
+            {
+                string key = match.Groups[1].Value;
+                string value = match.Groups[2].Value;
+
+                switch (key)
+                {
+                    case "Event": game.Event = value; break;
+                    case "Site": game.Site = value; break;
+                    case "Round": game.Round = value; break;
+                    case "White": game.White = value; break;
+                    case "Black": game.Black = value; break;
+                    case "WhiteElo": game.WhiteElo = int.TryParse(value, out int wElo) ? wElo : 0; break;
+                    case "BlackElo": game.BlackElo = int.TryParse(value, out int bElo) ? bElo : 0; break;
+                    case "Result": game.Result = ParseResult(value); break;
+                    case "EventDate": game.EventDate = value; break;
+                }
+            }
+
+            game.Moves = moves.Trim();
+            return game;
         }
 
         private static char ParseResult(string result)
         {
-            return result switch
+            switch (result)
             {
-                "1-0" => 'W',
-                "0-1" => 'B',
-                "1/2-1/2" => 'D',
-                _ => '?'
-            };
+                case "1-0": return 'W';
+                case "0-1": return 'B';
+                case "1/2-1/2": return 'D';
+                default: return '?';
+            }
         }
     }
 }

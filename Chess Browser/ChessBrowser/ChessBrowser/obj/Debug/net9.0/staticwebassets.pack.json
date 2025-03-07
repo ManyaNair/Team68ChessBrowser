@@ -1,0 +1,45 @@
+{
+  "Files": [
+    {
+      "Id": "/Users/manyanair/Projects/cs5530/Team68ChessBrowser/Chess Browser/ChessBrowser/ChessBrowser/obj/Debug/net9.0/scopedcss/projectbundle/ChessBrowser.bundle.scp.css",
+      "PackagePath": "staticwebassets/ChessBrowser.q370482c05.bundle.scp.css"
+    },
+    {
+      "Id": "/Users/manyanair/Projects/cs5530/Team68ChessBrowser/Chess Browser/ChessBrowser/ChessBrowser/wwwroot/app.css",
+      "PackagePath": "staticwebassets/app.css"
+    },
+    {
+      "Id": "/Users/manyanair/Projects/cs5530/Team68ChessBrowser/Chess Browser/ChessBrowser/ChessBrowser/wwwroot/bootstrap/bootstrap.min.css",
+      "PackagePath": "staticwebassets/bootstrap/bootstrap.min.css"
+    },
+    {
+      "Id": "/Users/manyanair/Projects/cs5530/Team68ChessBrowser/Chess Browser/ChessBrowser/ChessBrowser/wwwroot/bootstrap/bootstrap.min.css.map",
+      "PackagePath": "staticwebassets/bootstrap/bootstrap.min.css.map"
+    },
+    {
+      "Id": "/Users/manyanair/Projects/cs5530/Team68ChessBrowser/Chess Browser/ChessBrowser/ChessBrowser/wwwroot/favicon.png",
+      "PackagePath": "staticwebassets/favicon.png"
+    },
+    {
+      "Id": "obj/Debug/net9.0/staticwebassets/msbuild.ChessBrowser.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
+    },
+    {
+      "Id": "obj/Debug/net9.0/staticwebassets/msbuild.ChessBrowser.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj/Debug/net9.0/staticwebassets/msbuild.build.ChessBrowser.props",
+      "PackagePath": "build\\ChessBrowser.props"
+    },
+    {
+      "Id": "obj/Debug/net9.0/staticwebassets/msbuild.buildMultiTargeting.ChessBrowser.props",
+      "PackagePath": "buildMultiTargeting\\ChessBrowser.props"
+    },
+    {
+      "Id": "obj/Debug/net9.0/staticwebassets/msbuild.buildTransitive.ChessBrowser.props",
+      "PackagePath": "buildTransitive\\ChessBrowser.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

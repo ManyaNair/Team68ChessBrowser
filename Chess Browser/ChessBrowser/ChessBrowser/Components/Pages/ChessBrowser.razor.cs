@@ -43,28 +43,51 @@ namespace ChessBrowser.Components.Pages
       // TODO:
       //   Parse the provided PGN data
       //   We recommend creating separate libraries to represent chess data and load the file
+      var games = PgnParser.ParsePgnFile(PGNFileLines);
 
-
-      using (MySqlConnection conn = new MySqlConnection(connection))
+            using (MySqlConnection conn = new MySqlConnection(connection))
       {
         try
         {
           // Open a connection
           conn.Open();
 
-          // TODO:
-          //   Iterate through your data and generate appropriate insert commands
-                   
-          // TODO:
-          //   Update the Progress member variable every time progress has been made
-          //   (e.g. one iteration of your upload loop)
-          //   This will update the progress bar in the GUI
-          //   Its value should be an integer representing a percentage of completion
-          Progress = 0;
+                    // TODO:
+                    //   Iterate through your data and generate appropriate insert commands
 
-          // This tells the GUI to redraw after you update Progress (this should go inside your loop)
-          await InvokeAsync(StateHasChanged);
-          
+                    for (int i = 0; i < games.Count; i++)
+                    {
+                        var game = games[i];
+                        string insertCommand = @"
+                                INSERT INTO ChessGames (Event, Site, Round, White, Black, WhiteElo, BlackElo, Result, EventDate, Moves)
+                                VALUES (@Event, @Site, @Round, @White, @Black, @WhiteElo, @BlackElo, @Result, @EventDate, @Moves)";
+
+                        using (MySqlCommand cmd = new MySqlCommand(insertCommand, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@Event", game.Event);
+                            cmd.Parameters.AddWithValue("@Site", game.Site);
+                            cmd.Parameters.AddWithValue("@Round", game.Round);
+                            cmd.Parameters.AddWithValue("@White", game.White);
+                            cmd.Parameters.AddWithValue("@Black", game.Black);
+                            cmd.Parameters.AddWithValue("@WhiteElo", game.WhiteElo);
+                            cmd.Parameters.AddWithValue("@BlackElo", game.BlackElo);
+                            cmd.Parameters.AddWithValue("@Result", game.Result);
+                            cmd.Parameters.AddWithValue("@EventDate", game.EventDate);
+                            cmd.Parameters.AddWithValue("@Moves", game.Moves);
+
+                            cmd.ExecuteNonQuery();
+                        }
+
+                        // TODO:
+                        //   Update the Progress member variable every time progress has been made
+                        //   (e.g. one iteration of your upload loop)
+                        //   This will update the progress bar in the GUI
+                        //   Its value should be an integer representing a percentage of completion
+                        Progress = (i + 1) * 100 / games.Count;
+
+                        // This tells the GUI to redraw after you update Progress (this should go inside your loop)
+                        await InvokeAsync(StateHasChanged);
+                    }
 
         }
         catch (Exception e)
@@ -110,9 +133,70 @@ namespace ChessBrowser.Components.Pages
           // Open a connection
           conn.Open();
 
-          // TODO:
-          //   Generate and execute an SQL command,
-          //   then parse the results into an appropriate string and return it.
+                    // TODO:
+                    //   Generate and execute an SQL command,
+                    //   then parse the results into an appropriate string and return it.
+                    string query = "SELECT * FROM ChessGames WHERE 1=1";
+                    if (!string.IsNullOrEmpty(white))
+                    {
+                        query += " AND White = @White";
+                    }
+                    if (!string.IsNullOrEmpty(black))
+                    {
+                        query += " AND Black = @Black";
+                    }
+                    if (!string.IsNullOrEmpty(opening))
+                    {
+                        query += " AND Moves LIKE @Opening";
+                    }
+                    if (!string.IsNullOrEmpty(winner))
+                    {
+                        query += " AND Result = @Winner";
+                    }
+                    if (useDate)
+                    {
+                        query += " AND EventDate BETWEEN @Start AND @End";
+                    }
+
+                    using (MySqlCommand cmd = new MySqlCommand(query, conn))
+                    {
+                        if (!string.IsNullOrEmpty(white))
+                        {
+                            cmd.Parameters.AddWithValue("@White", white);
+                        }
+                        if (!string.IsNullOrEmpty(black))
+                        {
+                            cmd.Parameters.AddWithValue("@Black", black);
+                        }
+                        if (!string.IsNullOrEmpty(opening))
+                        {
+                            cmd.Parameters.AddWithValue("@Opening", "%" + opening + "%");
+                        }
+                        if (!string.IsNullOrEmpty(winner))
+                        {
+                            cmd.Parameters.AddWithValue("@Winner", winner);
+                        }
+                        if (useDate)
+                        {
+                            cmd.Parameters.AddWithValue("@Start", start.ToString("yyyy-MM-dd"));
+                            cmd.Parameters.AddWithValue("@End", end.ToString("yyyy-MM-dd"));
+                        }
+
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                numRows++;
+                                parsedResult += $"{reader["Event"]}, {reader["Site"]}, {reader["Round"]}, {reader["White"]}, {reader["Black"]}, {reader["WhiteElo"]}, {reader["BlackElo"]}, {reader["Result"]}, {reader["EventDate"]}";
+                                if (showMoves)
+                                {
+                                    parsedResult += $", {reader["Moves"]}";
+                                }
+                                parsedResult += "\n";
+                            }
+                        }
+                    }
+              
         }
         catch (Exception e)
         {
